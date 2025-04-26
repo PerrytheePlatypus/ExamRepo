@@ -2,42 +2,49 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')  
-        IMAGE_NAME = 'examimg-new'  
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        PATH = "${DOCKER_PATH};${PATH}"
+
+        DOCKERHUB_USERNAME = 'adityajangid2025'
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials-id'   // Jenkins credentials ID
+        IMAGE_NAME = 'examimg-new'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: ''https://github.com/PerrytheePlatypus/ExamRepo.git'  
+                git branch: 'main', url: 'https://github.com/PerrytheePlatypus/ExamRepo.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %IMAGE_NAME% ."  
+                bat "docker build -t %DOCKERHUB_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG% ."
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                bat "echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin" 
+                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                }
             }
         }
 
-        stage('Push Image to Docker Hub') {
+        stage('Push Docker Image to Docker Hub') {
             steps {
-                bat "docker push %IMAGE_NAME%"  
+                bat "docker push %DOCKERHUB_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG%"
             }
         }
     }
 
     post {
         success {
-            echo 'Docker image built and pushed successfully!' 
+            echo '✅ Docker image built and pushed to Docker Hub successfully!'
         }
         failure {
-            echo 'Pipeline failed.'  // Failure message
+            echo '❌ Build or push failed.'
         }
     }
 }
