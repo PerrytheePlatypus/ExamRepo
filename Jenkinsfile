@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
+        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker'
         PATH = "${DOCKER_PATH};${PATH}"
 
         DOCKERHUB_USERNAME = 'adityajangid2025'
