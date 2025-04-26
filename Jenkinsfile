@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
-        PATH = "${DOCKER_PATH};${PATH}"
+        
 
         DOCKERHUB_USERNAME = 'adityajangid2025'
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials-id'   // Jenkins credentials ID
