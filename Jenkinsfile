@@ -2,49 +2,42 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_PATH = 'C:\\Program Files\\Docker\\Docker\\resources\\bin'
-        PATH = "${DOCKER_PATH};${PATH}"
-
-        DOCKERHUB_USERNAME = 'adityajangid2025'
-        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials-id'   // Jenkins credentials ID
-        IMAGE_NAME = 'examimg-new'
-        IMAGE_TAG = 'latest'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')  
+        IMAGE_NAME = 'adityajangid2025/examimg-new'  
     }
 
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/PerrytheePlatypus/ExamRepo.git'
+                git branch: 'master', url: 'https://github.com/PerrytheePlatypus/ExamRepo.git'  
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %DOCKERHUB_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG% ."
+                bat "docker build -t %IMAGE_NAME% ."  
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                }
+                bat "echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin" 
             }
         }
 
-        stage('Push Docker Image to Docker Hub') {
+        stage('Push Image to Docker Hub') {
             steps {
-                bat "docker push %DOCKERHUB_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG%"
+                bat "docker push %IMAGE_NAME%"  
             }
         }
     }
 
     post {
         success {
-            echo 'Docker image built and pushed to Docker Hub successfully!'
+            echo 'Docker image built and pushed successfully!' 
         }
         failure {
-            echo 'Build or push failed.'
+            echo 'Pipeline failed.'  // Failure message
         }
     }
 }
